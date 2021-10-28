@@ -47,7 +47,15 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
 class AdsSensor(AdsEntity, SensorEntity):
     """Representation of an ADS sensor entity."""
 
-    def __init__(self, ads_hub, ads_var, ads_type, name, unit_of_measurement, factor):
+    def __init__(
+        self,
+        ads_hub: str,
+        ads_var: str,
+        ads_type: str,
+        name: str,
+        unit_of_measurement: str,
+        factor: int,
+    ):
         """Initialize AdsSensor entity."""
         super().__init__(ads_hub, name, ads_var)
         self._attr_native_unit_of_measurement = unit_of_measurement
