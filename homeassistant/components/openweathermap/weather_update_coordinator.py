@@ -1,4 +1,6 @@
 """Weather data coordinator for the OpenWeatherMap (OWM) service."""
+from __future__ import annotations
+
 from datetime import timedelta
 import logging
 from typing import Any
@@ -67,7 +69,7 @@ class WeatherUpdateCoordinator(DataUpdateCoordinator):
         longitude: float,
         forecast_mode: Any,
         hass: HomeAssistant,
-    ):
+    ) -> None:
         """Initialize coordinator."""
         self._owm_client = owm
         self._latitude = latitude
@@ -81,7 +83,7 @@ class WeatherUpdateCoordinator(DataUpdateCoordinator):
             hass, _LOGGER, name=DOMAIN, update_interval=WEATHER_UPDATE_INTERVAL
         )
 
-    async def _async_update_data(self):
+    async def _async_update_data(self) -> dict:
         data = {}
         with async_timeout.timeout(20):
             try:
@@ -91,7 +93,7 @@ class WeatherUpdateCoordinator(DataUpdateCoordinator):
                 raise UpdateFailed(error) from error
         return data
 
-    async def _get_owm_weather(self):
+    async def _get_owm_weather(self) -> (Any | LegacyWeather):
         """Poll weather data from OWM."""
         if self._forecast_mode in (
             FORECAST_MODE_ONECALL_HOURLY,
@@ -107,7 +109,7 @@ class WeatherUpdateCoordinator(DataUpdateCoordinator):
 
         return weather
 
-    def _get_legacy_weather_and_forecast(self):
+    def _get_legacy_weather_and_forecast(self) -> LegacyWeather:
         """Get weather and forecast data from OWM."""
         interval = self._get_forecast_interval()
         weather = self._owm_client.weather_at_coords(self._latitude, self._longitude)
@@ -116,14 +118,16 @@ class WeatherUpdateCoordinator(DataUpdateCoordinator):
         )
         return LegacyWeather(weather.weather, forecast.forecast.weathers)
 
-    def _get_forecast_interval(self):
+    def _get_forecast_interval(self) -> str:
         """Get the correct forecast interval depending on the forecast mode."""
         interval = "daily"
         if self._forecast_mode == FORECAST_MODE_HOURLY:
             interval = "3h"
         return interval
 
-    def _convert_weather_response(self, weather_response):
+    def _convert_weather_response(
+        self, weather_response: (Any | LegacyWeather)
+    ) -> dict[str, Any]:
         """Format the weather response correctly."""
         current_weather = weather_response.current
         forecast_weather = self._get_forecast_from_weather_response(weather_response)
