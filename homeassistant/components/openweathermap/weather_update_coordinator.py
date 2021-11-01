@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from datetime import timedelta
 import logging
-from typing import Any
+from typing import Any, Literal
 
 import async_timeout
 from pyowm.commons.exceptions import APIRequestError, UnauthorizedError
@@ -155,7 +155,9 @@ class WeatherUpdateCoordinator(DataUpdateCoordinator):
             ATTR_API_FORECAST: forecast_weather,
         }
 
-    def _get_forecast_from_weather_response(self, weather_response):
+    def _get_forecast_from_weather_response(
+        self, weather_response: (Any | LegacyWeather)
+    ) -> list[dict[str, Any]]:
         forecast_arg = "forecast"
         if self._forecast_mode == FORECAST_MODE_ONECALL_HOURLY:
             forecast_arg = "forecast_hourly"
@@ -165,7 +167,7 @@ class WeatherUpdateCoordinator(DataUpdateCoordinator):
             self._convert_forecast(x) for x in getattr(weather_response, forecast_arg)
         ]
 
-    def _convert_forecast(self, entry):
+    def _convert_forecast(self, entry: Any) -> dict[str, Any]:
         forecast = {
             ATTR_FORECAST_TIME: dt.utc_from_timestamp(
                 entry.reference_time("unix")
@@ -195,13 +197,13 @@ class WeatherUpdateCoordinator(DataUpdateCoordinator):
         return forecast
 
     @staticmethod
-    def _fmt_dewpoint(dewpoint):
+    def _fmt_dewpoint(dewpoint: Any) -> float | None:
         if dewpoint is not None:
             return round(kelvin_to_celsius(dewpoint), 1)
         return None
 
     @staticmethod
-    def _get_rain(rain):
+    def _get_rain(rain: Any) -> (Any | Literal[0]):
         """Get rain data from weather data."""
         if "all" in rain:
             return round(rain["all"], 2)
@@ -212,7 +214,7 @@ class WeatherUpdateCoordinator(DataUpdateCoordinator):
         return 0
 
     @staticmethod
-    def _get_snow(snow):
+    def _get_snow(snow: Any) -> (Any | Literal[0]):
         """Get snow data from weather data."""
         if snow:
             if "all" in snow:
@@ -224,7 +226,7 @@ class WeatherUpdateCoordinator(DataUpdateCoordinator):
         return 0
 
     @staticmethod
-    def _calc_precipitation(rain, snow):
+    def _calc_precipitation(rain: Any, snow: Any) -> Any:
         """Calculate the precipitation."""
         rain_value = 0
         if WeatherUpdateCoordinator._get_rain(rain) != 0:
@@ -237,7 +239,7 @@ class WeatherUpdateCoordinator(DataUpdateCoordinator):
         return round(rain_value + snow_value, 2)
 
     @staticmethod
-    def _calc_precipitation_kind(rain, snow):
+    def _calc_precipitation_kind(rain: Any, snow: Any) -> str:
         """Determine the precipitation kind."""
         if WeatherUpdateCoordinator._get_rain(rain) != 0:
             if WeatherUpdateCoordinator._get_snow(snow) != 0:
@@ -248,7 +250,7 @@ class WeatherUpdateCoordinator(DataUpdateCoordinator):
             return "Snow"
         return "None"
 
-    def _get_condition(self, weather_code, timestamp=None):
+    def _get_condition(self, weather_code: Any, timestamp: Any = None) -> str:
         """Get weather condition from weather data."""
         if weather_code == WEATHER_CODE_SUNNY_OR_CLEAR_NIGHT:
 
@@ -265,7 +267,7 @@ class WeatherUpdateCoordinator(DataUpdateCoordinator):
 class LegacyWeather:
     """Class to harmonize weather data model for hourly, daily and One Call APIs."""
 
-    def __init__(self, current_weather, forecast):
+    def __init__(self, current_weather: Any, forecast: Any) -> None:
         """Initialize weather object."""
         self.current = current_weather
         self.forecast = forecast
