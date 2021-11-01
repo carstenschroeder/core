@@ -1,9 +1,11 @@
 """Weather data coordinator for the OpenWeatherMap (OWM) service."""
 from datetime import timedelta
 import logging
+from typing import Any
 
 import async_timeout
 from pyowm.commons.exceptions import APIRequestError, UnauthorizedError
+from pyowm.owm import OWM
 
 from homeassistant.components.weather import (
     ATTR_CONDITION_CLEAR_NIGHT,
@@ -18,6 +20,7 @@ from homeassistant.components.weather import (
     ATTR_FORECAST_WIND_BEARING,
     ATTR_FORECAST_WIND_SPEED,
 )
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers import sun
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt
@@ -57,7 +60,14 @@ WEATHER_UPDATE_INTERVAL = timedelta(minutes=10)
 class WeatherUpdateCoordinator(DataUpdateCoordinator):
     """Weather data update coordinator."""
 
-    def __init__(self, owm, latitude, longitude, forecast_mode, hass):
+    def __init__(
+        self,
+        owm: OWM,
+        latitude: float,
+        longitude: float,
+        forecast_mode: Any,
+        hass: HomeAssistant,
+    ):
         """Initialize coordinator."""
         self._owm_client = owm
         self._latitude = latitude
